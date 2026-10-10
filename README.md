@@ -1,7 +1,8 @@
 # ⚡ ArcTip — Native USDC Tipping & Payment Links on Circle Arc L1
 
 > Built for the **Arc Microgrants | Circle** on DoraHacks.  
-> Live dApp on Circle's Arc Layer 1 Mainnet (Chain ID `5042`).
+> **Live dApp:** [https://arc-tip-phi.vercel.app](https://arc-tip-phi.vercel.app)  
+> Live on Circle's Arc Layer 1 Mainnet (Chain ID `5042`).
 
 [![Arc Mainnet](https://img.shields.io/badge/Arc_Mainnet-5042-00D2FF?style=flat-square)](https://explorer.arc.io)
 [![Gas Token](https://img.shields.io/badge/Gas_Token-USDC_(18_dec)-10B981?style=flat-square)](https://explorer.arc.io)

@@ -18,7 +18,7 @@ export const LinkGenerator: React.FC<LinkGeneratorProps> = ({
 
   const activeAddress = addressInput.trim() || currentAccount || "";
   const origin =
-    typeof window !== "undefined" ? window.location.origin : "https://arc-tip.vercel.app";
+    typeof window !== "undefined" ? window.location.origin : "https://arc-tip-phi.vercel.app";
   const shareUrl = activeAddress ? `${origin}/tip/${activeAddress}` : "";
 
   const handleCopy = () => {

@@ -60,7 +60,7 @@ export default function RecipientTipPage() {
   const origin =
     typeof window !== "undefined"
       ? window.location.origin
-      : "https://arc-tip.vercel.app";
+      : "https://arc-tip-phi.vercel.app";
   const shareUrl = `${origin}/tip/${cleanRecipient}`;
 
   const handleSendTip = async (
