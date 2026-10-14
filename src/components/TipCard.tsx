@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { formatAddress, formatUsdc, parseUsdc, getTxUrl } from "@/lib/format";
+import { getChainConfig } from "@/lib/chains";
 import {
   Send,
   Sparkles,
@@ -17,9 +18,10 @@ interface TipCardProps {
   initialRecipient?: string;
   senderAddress: string | null;
   senderBalance: bigint | null;
+  chainId?: number | null;
   onSendTip: (
     recipient: string,
-    amountUsdc: string,
+    amountTokens: string,
     memo: string,
     useContract: boolean
   ) => Promise<{ success: boolean; txHash?: string; error?: string }>;
@@ -31,6 +33,7 @@ export const TipCard: React.FC<TipCardProps> = ({
   initialRecipient = "",
   senderAddress,
   senderBalance,
+  chainId,
   onSendTip,
 }) => {
   const [recipient, setRecipient] = useState(initialRecipient);
@@ -44,11 +47,24 @@ export const TipCard: React.FC<TipCardProps> = ({
     txHash?: string;
   } | null>(null);
 
+  const chainConfig = getChainConfig(chainId);
+  const symbol = chainConfig.symbol;
+  const hasContract = !!chainConfig.contractAddress;
+
   useEffect(() => {
     if (initialRecipient) {
       setRecipient(initialRecipient);
     }
   }, [initialRecipient]);
+
+  // If chain doesn't have contract deployed yet, default to direct transfer
+  useEffect(() => {
+    if (!hasContract) {
+      setUseContract(false);
+    } else {
+      setUseContract(true);
+    }
+  }, [hasContract, chainId]);
 
   const handlePreset = (val: string) => {
     setAmount(val);
@@ -57,7 +73,7 @@ export const TipCard: React.FC<TipCardProps> = ({
 
   const handleMax = () => {
     if (!senderBalance || senderBalance <= 0n) return;
-    // Leave small dust for gas (< 0.002 USDC)
+    // Leave small dust for gas (< 0.002 token)
     const reserve = parseUsdc("0.002");
     if (senderBalance > reserve) {
       const maxVal = senderBalance - reserve;
@@ -75,7 +91,7 @@ export const TipCard: React.FC<TipCardProps> = ({
     if (!cleanRecipient.startsWith("0x") || cleanRecipient.length !== 42) {
       setStatusMessage({
         type: "error",
-        text: "Please enter a valid Arc wallet address (0x...)",
+        text: `Please enter a valid ${chainConfig.shortName} wallet address (0x...)`,
       });
       return;
     }
@@ -84,7 +100,7 @@ export const TipCard: React.FC<TipCardProps> = ({
     if (isNaN(numAmount) || numAmount <= 0) {
       setStatusMessage({
         type: "error",
-        text: "Tip amount must be greater than 0 USDC",
+        text: `Tip amount must be greater than 0 ${symbol}`,
       });
       return;
     }
@@ -100,7 +116,7 @@ export const TipCard: React.FC<TipCardProps> = ({
     setLoading(true);
     setStatusMessage({
       type: "info",
-      text: "Waiting for wallet confirmation on Arc Mainnet...",
+      text: `Waiting for wallet confirmation on ${chainConfig.name}...`,
     });
 
     try {
@@ -108,7 +124,7 @@ export const TipCard: React.FC<TipCardProps> = ({
       if (res.success && res.txHash) {
         setStatusMessage({
           type: "success",
-          text: `Tip confirmed on Arc Mainnet! Sent ${amount} USDC to ${formatAddress(
+          text: `Tip confirmed on ${chainConfig.name}! Sent ${amount} ${symbol} to ${formatAddress(
             cleanRecipient
           )}`,
           txHash: res.txHash,
@@ -153,13 +169,13 @@ export const TipCard: React.FC<TipCardProps> = ({
       <div className="flex items-center justify-between mb-5">
         <div>
           <h2 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
-            Send Native USDC Tip
+            Send Native {symbol} Tip
             <span className="text-[10px] font-mono font-normal text-[#00D2FF] bg-[#0B0E14] border border-[#1E2638] px-2 py-0.5 rounded">
               Zero Approval
             </span>
           </h2>
           <p className="text-xs text-[#94A3B8] mt-0.5">
-            1-step native transfer. Gas and settlement paid in USDC on Arc L1.
+            1-step native transfer. Gas and settlement paid in {symbol} on {chainConfig.name}.
           </p>
         </div>
       </div>
@@ -191,7 +207,7 @@ export const TipCard: React.FC<TipCardProps> = ({
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <label className="text-xs font-mono uppercase text-[#94A3B8] tracking-wider">
-              Tip Amount (USDC)
+              Tip Amount ({symbol})
             </label>
             {senderBalance !== null && (
               <button
@@ -199,7 +215,7 @@ export const TipCard: React.FC<TipCardProps> = ({
                 onClick={handleMax}
                 className="text-[11px] font-mono text-[#00D2FF] hover:underline"
               >
-                Max: {formatUsdc(senderBalance)} USDC
+                Max: {formatUsdc(senderBalance)} {symbol}
               </button>
             )}
           </div>
@@ -217,7 +233,7 @@ export const TipCard: React.FC<TipCardProps> = ({
             />
             <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none">
               <span className="text-xs font-bold font-mono text-[#00D2FF]">
-                USDC
+                {symbol}
               </span>
             </div>
           </div>
@@ -235,7 +251,7 @@ export const TipCard: React.FC<TipCardProps> = ({
                     : "bg-[#0B0E14] border-[#1E2638] text-[#94A3B8] hover:text-white hover:border-[#334155]"
                 }`}
               >
-                ${preset}
+                {symbol === "USDC" ? `$${preset}` : `${preset} ${symbol}`}
               </button>
             ))}
           </div>
@@ -269,22 +285,30 @@ export const TipCard: React.FC<TipCardProps> = ({
               <Zap className="w-4 h-4 text-[#00D2FF]" />
               <div className="text-left">
                 <span className="text-xs font-medium text-white block">
-                  {useContract ? "ArcTipJar Contract Memo" : "Direct P2P Transfer"}
+                  {hasContract
+                    ? useContract
+                      ? "ArcTipJar Contract Memo"
+                      : "Direct P2P Transfer"
+                    : "Direct Native P2P Transfer"}
                 </span>
                 <span className="text-[10px] text-[#64748B] block font-mono">
-                  {useContract
-                    ? "Emits on-chain Tip event with public memo"
-                    : "Zero-contract native transfer (21k gas)"}
+                  {hasContract
+                    ? useContract
+                      ? "Emits on-chain Tip event with public memo"
+                      : "Zero-contract native transfer (21k gas)"
+                    : "Contract deployment pending gas faucet; direct transfer active"}
                 </span>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setUseContract(!useContract)}
-              className="text-[11px] font-mono px-2.5 py-1 rounded bg-[#182030] text-[#00D2FF] border border-[#1E2638] hover:bg-[#1E2638] transition-colors"
-            >
-              Toggle
-            </button>
+            {hasContract && (
+              <button
+                type="button"
+                onClick={() => setUseContract(!useContract)}
+                className="text-[11px] font-mono px-2.5 py-1 rounded bg-[#182030] text-[#00D2FF] border border-[#1E2638] hover:bg-[#1E2638] transition-colors"
+              >
+                Toggle
+              </button>
+            )}
           </div>
         </div>
 
@@ -292,9 +316,9 @@ export const TipCard: React.FC<TipCardProps> = ({
         <div className="p-3 rounded-lg bg-[#0B0E14]/60 border border-[#1E2638]/70 flex items-start gap-2.5 text-[11px] text-[#94A3B8]">
           <Info className="w-4 h-4 text-[#00D2FF] shrink-0 mt-0.5" />
           <div>
-            <span className="text-white font-medium">Arc Native Advantage: </span>
-            No ERC-20 approve transaction needed. Gas fee (~0.0001 USDC) is deducted
-            directly from your USDC balance in the same single block transaction.
+            <span className="text-white font-medium">{chainConfig.name} Native Advantage: </span>
+            No ERC-20 approve transaction needed. Gas fee is deducted
+            directly from your native {symbol} balance in the same single block transaction.
           </div>
         </div>
 
@@ -320,12 +344,12 @@ export const TipCard: React.FC<TipCardProps> = ({
               <div>{statusMessage.text}</div>
               {statusMessage.txHash && (
                 <a
-                  href={getTxUrl(statusMessage.txHash)}
+                  href={getTxUrl(statusMessage.txHash, chainConfig.chain.id)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 font-mono text-[11px] text-white hover:underline pt-0.5"
                 >
-                  <span>View on Arc Explorer</span>
+                  <span>View on {chainConfig.name} Explorer</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
               )}
@@ -346,13 +370,13 @@ export const TipCard: React.FC<TipCardProps> = ({
           {loading ? (
             <>
               <div className="w-4 h-4 border-2 border-[#94A3B8] border-t-transparent rounded-full animate-spin" />
-              <span>Broadcasting to Arc...</span>
+              <span>Broadcasting to {chainConfig.shortName}...</span>
             </>
           ) : (
             <>
               <Send className="w-4 h-4" />
               <span>
-                Tip {amount} USDC {memo ? "with Memo" : ""}
+                Tip {amount} {symbol} {memo && useContract ? "with Memo" : ""}
               </span>
             </>
           )}

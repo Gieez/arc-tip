@@ -1,6 +1,18 @@
 export const ARC_TIP_CONTRACT_ADDRESS =
   "0xBD437E3378eae16a082580e26157575523Ba852f" as const;
 
+// BOT Chain Mainnet contract will be set here once deployed
+export const BOT_CHAIN_CONTRACT_ADDRESS: `0x${string}` | null = null;
+
+export function getContractAddressForChain(
+  chainId?: number | null
+): `0x${string}` | null {
+  if (chainId === 677) {
+    return BOT_CHAIN_CONTRACT_ADDRESS;
+  }
+  return ARC_TIP_CONTRACT_ADDRESS;
+}
+
 export const ARC_TIP_ABI = [
   {
     type: "function",

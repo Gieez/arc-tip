@@ -12,7 +12,8 @@ export function formatUsdc(
 ): string {
   if (amountWei === null || amountWei === undefined) return "0.00";
   try {
-    const rawBigInt = typeof amountWei === "bigint" ? amountWei : BigInt(amountWei);
+    const rawBigInt =
+      typeof amountWei === "bigint" ? amountWei : BigInt(amountWei);
     const formatted = formatUnits(rawBigInt, 18);
     const num = parseFloat(formatted);
     if (isNaN(num)) return "0.00";
@@ -25,6 +26,14 @@ export function formatUsdc(
   }
 }
 
+export function formatToken(
+  amountWei: bigint | string | number | null | undefined,
+  symbol: string = "USDC",
+  decimals: number = 4
+): string {
+  return `${formatUsdc(amountWei, decimals)} ${symbol}`;
+}
+
 export function parseUsdc(amountStr: string): bigint {
   try {
     const sanitized = amountStr.trim().replace(/,/g, "");
@@ -35,14 +44,26 @@ export function parseUsdc(amountStr: string): bigint {
   }
 }
 
-export function getTxUrl(hash: string): string {
+export function getTxUrl(hash: string, chainId?: number | null): string {
+  if (chainId === 677) {
+    return `https://scan.botchain.ai/tx/${hash}`;
+  }
   return `https://explorer.arc.io/tx/${hash}`;
 }
 
-export function getAddressUrl(address: string): string {
+export function getAddressUrl(address: string, chainId?: number | null): string {
+  if (chainId === 677) {
+    return `https://scan.botchain.ai/address/${address}`;
+  }
   return `https://explorer.arc.io/address/${address}`;
 }
 
-export function getBlockUrl(blockNumber: number | bigint): string {
+export function getBlockUrl(
+  blockNumber: number | bigint,
+  chainId?: number | null
+): string {
+  if (chainId === 677) {
+    return `https://scan.botchain.ai/block/${blockNumber}`;
+  }
   return `https://explorer.arc.io/block/${blockNumber}`;
 }

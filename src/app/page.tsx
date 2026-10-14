@@ -22,6 +22,9 @@ export default function Home() {
     account,
     balance,
     chainId,
+    selectedChainId,
+    setSelectedChainId,
+    currentConfig,
     connect,
     disconnect,
     switchNetwork,
@@ -46,9 +49,9 @@ export default function Home() {
     setLoadingFeed(true);
     try {
       const [netStats, totalTips, recentTips] = await Promise.all([
-        getArcNetworkStats(),
-        getGlobalTotalTips(),
-        getRecentTips(10),
+        getArcNetworkStats(selectedChainId),
+        getGlobalTotalTips(selectedChainId),
+        getRecentTips(selectedChainId, 10),
       ]);
       setStats(netStats);
       setTotalTipsCount(totalTips);
@@ -56,7 +59,7 @@ export default function Home() {
       // Merge with any local session tips stored in localStorage
       let localSessionTips: TipEvent[] = [];
       try {
-        const stored = localStorage.getItem("arc_tip_local_history");
+        const stored = localStorage.getItem(`arc_tip_history_${selectedChainId}`);
         if (stored) {
           localSessionTips = JSON.parse(stored);
         }
@@ -81,7 +84,7 @@ export default function Home() {
     } finally {
       setLoadingFeed(false);
     }
-  }, []);
+  }, [selectedChainId]);
 
   useEffect(() => {
     loadNetworkData();
@@ -96,30 +99,30 @@ export default function Home() {
 
   const handleSendTip = async (
     recipient: string,
-    amountUsdc: string,
+    amountTokens: string,
     memo: string,
     useContract: boolean
   ) => {
-    const res = await sendTip(recipient, amountUsdc, memo, useContract);
+    const res = await sendTip(recipient, amountTokens, memo, useContract);
     if (res.success && res.txHash && account) {
       // Store in local history for immediate responsive feed feedback
       const newTip: TipEvent = {
         from: account,
         to: recipient,
-        amount: BigInt(Math.floor(parseFloat(amountUsdc) * 1e18)),
+        amount: BigInt(Math.floor(parseFloat(amountTokens) * 1e18)),
         memo,
         txHash: res.txHash,
         blockNumber: stats?.blockNumber || 0n,
         timestamp: Date.now(),
+        chainId: selectedChainId,
       };
 
       try {
-        const existing = JSON.parse(
-          localStorage.getItem("arc_tip_local_history") || "[]"
-        );
+        const key = `arc_tip_history_${selectedChainId}`;
+        const existing = JSON.parse(localStorage.getItem(key) || "[]");
         const updated = [newTip, ...existing].slice(0, 20);
         localStorage.setItem(
-          "arc_tip_local_history",
+          key,
           JSON.stringify(updated, (k, v) =>
             typeof v === "bigint" ? v.toString() : v
           )
@@ -130,7 +133,7 @@ export default function Home() {
 
       // Refresh feed
       loadNetworkData();
-      refreshBalance();
+      refreshBalance(account, selectedChainId);
     }
     return res;
   };
@@ -142,9 +145,10 @@ export default function Home() {
         account={account}
         balance={balance}
         chainId={chainId}
+        selectedChainId={selectedChainId}
         onConnect={connect}
         onDisconnect={disconnect}
-        onSwitchNetwork={() => setNetworkModalOpen(true)}
+        onOpenNetworkModal={() => setNetworkModalOpen(true)}
       />
 
       {/* Main Container */}
@@ -153,17 +157,22 @@ export default function Home() {
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121722] border border-[#1E2638] text-xs font-mono text-[#00D2FF]">
             <Zap className="w-3.5 h-3.5" />
-            <span>Circle Arc Layer 1 • Chain ID 5042</span>
+            <span>
+              {currentConfig.name} • Chain ID {currentConfig.chain.id}
+            </span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
-            Native USDC Tipping & Payment Links
+            Native {currentConfig.symbol} Tipping & Payment Links
           </h1>
 
           <p className="text-sm sm:text-base text-[#94A3B8] max-w-2xl mx-auto leading-relaxed">
-            On Arc, the gas token <span className="text-white font-semibold">is USDC</span>.
-            Send non-custodial tips and micro-payments in 1 step with zero ERC-20
-            approvals, sub-second finality, and sub-cent fees.
+            On {currentConfig.shortName}, gas is paid in{" "}
+            <span className="text-white font-semibold">
+              {currentConfig.symbol}
+            </span>
+            . Send non-custodial tips and micro-payments in 1 step with zero
+            ERC-20 approvals, sub-second finality, and sub-cent fees.
           </p>
 
           {/* Value Props Row */}
@@ -184,11 +193,11 @@ export default function Home() {
               <div className="flex items-center gap-2 mb-1">
                 <span className="w-2 h-2 rounded-full bg-emerald-400" />
                 <span className="text-xs font-bold text-white uppercase font-mono">
-                  18-Dec Native USDC
+                  Native {currentConfig.symbol}
                 </span>
               </div>
               <p className="text-[11px] text-[#94A3B8]">
-                Gas and payment both settled in identical stable dollars.
+                Gas and payment both settled natively in the same network token.
               </p>
             </div>
 
@@ -200,7 +209,7 @@ export default function Home() {
                 </span>
               </div>
               <p className="text-[11px] text-[#94A3B8]">
-                Instant transaction inclusion with on-chain immutable memos.
+                Instant transaction inclusion with verifiable on-chain memos.
               </p>
             </div>
           </div>
@@ -213,6 +222,7 @@ export default function Home() {
             <TipCard
               senderAddress={account}
               senderBalance={balance}
+              chainId={selectedChainId}
               onSendTip={handleSendTip}
             />
 
@@ -222,36 +232,36 @@ export default function Home() {
             />
           </div>
 
-          {/* Right Column: Live Feed & Arc Metrics */}
+          {/* Right Column: Live Feed & Network Metrics */}
           <div className="lg:col-span-5 space-y-6">
             <ActivityFeed
               stats={stats}
               totalTipsCount={totalTipsCount}
               tips={tips}
               loading={loadingFeed}
+              chainId={selectedChainId}
               onRefresh={loadNetworkData}
             />
 
-            {/* Architecture Explanation Card */}
+            {/* Multi-Chain Architecture Explanation Card */}
             <div className="p-5 rounded-xl bg-[#121722] border border-[#1E2638] text-xs space-y-3">
               <h4 className="font-bold text-white text-sm flex items-center gap-2">
                 <Shield className="w-4 h-4 text-[#00D2FF]" />
-                Why This Fits Arc Layer 1
+                Multi-Chain Non-Custodial Architecture
               </h4>
               <p className="text-[#94A3B8] leading-relaxed">
-                Standard EVM tipping requires users to hold volatile gas tokens (ETH/MATIC)
-                plus stablecoins, paying high gas for approvals. On Arc,
-                1 balance does everything. ArcTip is built around that simplicity.
+                ArcTip is architected for both Circle Arc L1 (5042) and BOT Chain Mainnet (677).
+                Value flows directly peer-to-peer into recipient wallets with zero intermediary custody.
               </p>
               <div className="flex items-center justify-between pt-2 border-t border-[#1E2638] text-[11px] font-mono">
-                <span className="text-[#64748B]">Built for Arc Microgrants</span>
+                <span className="text-[#64748B]">Active: {currentConfig.name}</span>
                 <a
-                  href="https://explorer.arc.io"
+                  href={currentConfig.explorerUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[#00D2FF] hover:underline flex items-center gap-1"
                 >
-                  <span>Arc Explorer</span>
+                  <span>Explorer</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
@@ -266,7 +276,7 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <span className="font-bold text-white tracking-tight">ArcTip</span>
             <span className="text-[#475569]">•</span>
-            <span>Circle Arc Layer 1 (5042)</span>
+            <span>Circle Arc (5042) & BOT Chain (677)</span>
           </div>
 
           <div className="flex items-center gap-4 font-mono text-[11px]">
@@ -279,20 +289,22 @@ export default function Home() {
               <Code2 className="w-3.5 h-3.5" />
               <span>GitHub Repo</span>
             </a>
-            <a
-              href="https://explorer.arc.io/address/0xBD437E3378eae16a082580e26157575523Ba852f"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-white flex items-center gap-1 transition-colors"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>Contract</span>
-            </a>
+            {currentConfig.contractAddress && (
+              <a
+                href={`${currentConfig.explorerUrl}/address/${currentConfig.contractAddress}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white flex items-center gap-1 transition-colors"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Contract</span>
+              </a>
+            )}
             <button
               onClick={() => setNetworkModalOpen(true)}
               className="hover:text-[#00D2FF] transition-colors"
             >
-              RPC Config
+              Network Switcher
             </button>
           </div>
         </div>
@@ -301,8 +313,12 @@ export default function Home() {
       {/* Modals */}
       <NetworkModal
         isOpen={networkModalOpen}
+        activeChainId={selectedChainId}
         onClose={() => setNetworkModalOpen(false)}
-        onSwitch={switchNetwork}
+        onSwitch={(targetChainId) => {
+          setSelectedChainId(targetChainId);
+          switchNetwork(targetChainId);
+        }}
       />
 
       <QrModal

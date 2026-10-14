@@ -3,7 +3,7 @@
 import React from "react";
 import { formatAddress, formatUsdc, getTxUrl, getAddressUrl } from "@/lib/format";
 import { TipEvent, ArcNetworkStats } from "@/lib/rpc";
-import { ARC_TIP_CONTRACT_ADDRESS } from "@/lib/contract";
+import { getChainConfig } from "@/lib/chains";
 import {
   Activity,
   ExternalLink,
@@ -18,6 +18,7 @@ interface ActivityFeedProps {
   totalTipsCount: bigint | null;
   tips: TipEvent[];
   loading: boolean;
+  chainId?: number | null;
   onRefresh: () => void;
 }
 
@@ -26,8 +27,13 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   totalTipsCount,
   tips,
   loading,
+  chainId,
   onRefresh,
 }) => {
+  const chainConfig = getChainConfig(chainId);
+  const symbol = chainConfig.symbol;
+  const contractAddress = chainConfig.contractAddress;
+
   return (
     <div className="w-full bg-[#121722] border border-[#1E2638] rounded-xl p-5 sm:p-6 shadow-xl space-y-5">
       {/* Network Stats Card */}
@@ -36,7 +42,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
           <div className="flex items-center gap-2">
             <Activity className="w-4 h-4 text-[#00D2FF]" />
             <h3 className="text-base font-bold text-white tracking-tight">
-              Arc Network Metrics
+              {chainConfig.name} Metrics
             </h3>
           </div>
           <button
@@ -55,9 +61,11 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
               Chain ID
             </span>
             <span className="text-sm font-mono font-bold text-white block mt-0.5">
-              5042
+              {chainConfig.chain.id}
             </span>
-            <span className="text-[9px] font-mono text-[#00D2FF]">0x13b2 (Arc)</span>
+            <span className="text-[9px] font-mono text-[#00D2FF]">
+              0x{chainConfig.chain.id.toString(16)} ({chainConfig.shortName})
+            </span>
           </div>
 
           <div className="p-3 bg-[#0B0E14] rounded-lg border border-[#1E2638]">
@@ -75,7 +83,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
               Gas Asset
             </span>
             <span className="text-sm font-mono font-bold text-white block mt-0.5">
-              USDC
+              {symbol}
             </span>
             <span className="text-[9px] font-mono text-[#94A3B8]">
               {stats?.gasPriceGwei ? `${stats.gasPriceGwei} Gwei` : "—"}
@@ -89,7 +97,9 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
             <span className="text-sm font-mono font-bold text-[#00D2FF] block mt-0.5">
               {totalTipsCount !== null ? totalTipsCount.toString() : "—"}
             </span>
-            <span className="text-[9px] font-mono text-[#94A3B8]">On-chain count</span>
+            <span className="text-[9px] font-mono text-[#94A3B8]">
+              {contractAddress ? "On-chain count" : "P2P active"}
+            </span>
           </div>
         </div>
       </div>
@@ -97,32 +107,52 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
       {/* Contract Verification Link */}
       <div className="p-3 bg-[#0B0E14] border border-[#1E2638] rounded-lg flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-emerald-400" />
+          <ShieldCheck
+            className={`w-4 h-4 ${
+              contractAddress ? "text-emerald-400" : "text-[#00D2FF]"
+            }`}
+          />
           <div className="text-left">
             <span className="text-xs text-white font-medium block">
-              ArcTipJar Mainnet Contract
+              {contractAddress
+                ? `${chainConfig.shortName} Tip Contract`
+                : `${chainConfig.shortName} Deployment Status`}
             </span>
             <span className="text-[10px] font-mono text-[#94A3B8]">
-              {formatAddress(ARC_TIP_CONTRACT_ADDRESS)}
+              {contractAddress
+                ? formatAddress(contractAddress)
+                : "Contract deploy pending faucet (Direct P2P Ready)"}
             </span>
           </div>
         </div>
-        <a
-          href={getAddressUrl(ARC_TIP_CONTRACT_ADDRESS)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-[11px] font-mono text-[#00D2FF] hover:underline flex items-center gap-1"
-        >
-          <span>Explorer</span>
-          <ExternalLink className="w-3 h-3" />
-        </a>
+        {contractAddress ? (
+          <a
+            href={getAddressUrl(contractAddress, chainConfig.chain.id)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] font-mono text-[#00D2FF] hover:underline flex items-center gap-1"
+          >
+            <span>Explorer</span>
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        ) : (
+          <a
+            href={chainConfig.explorerUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] font-mono text-[#00D2FF] hover:underline flex items-center gap-1"
+          >
+            <span>Network Explorer</span>
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        )}
       </div>
 
       {/* Recent Activity List */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <h4 className="text-xs font-mono uppercase text-[#94A3B8] tracking-wider">
-            Live On-Chain Feed
+            Live On-Chain Feed ({chainConfig.shortName})
           </h4>
           <span className="text-[10px] font-mono text-[#64748B]">
             {tips.length} {tips.length === 1 ? "record" : "records"}
@@ -133,10 +163,10 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
           <div className="text-center py-8 bg-[#0B0E14] border border-[#1E2638] rounded-lg">
             <Box className="w-8 h-8 text-[#334155] mx-auto mb-2" />
             <p className="text-xs text-[#94A3B8] font-mono">
-              No recent tips in block range.
+              No recent tips in block range on {chainConfig.name}.
             </p>
             <p className="text-[11px] text-[#64748B] mt-1">
-              Be the first to send a tip and stamp an on-chain memo!
+              Be the first to send a tip and stamp an on-chain record!
             </p>
           </div>
         ) : (
@@ -156,7 +186,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-mono font-bold text-emerald-400">
-                      +{formatUsdc(t.amount)} USDC
+                      +{formatUsdc(t.amount)} {symbol}
                     </span>
                   </div>
                 </div>
@@ -172,7 +202,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
                   <span>Block #{t.blockNumber ? t.blockNumber.toString() : "—"}</span>
                   {t.txHash && (
                     <a
-                      href={getTxUrl(t.txHash)}
+                      href={getTxUrl(t.txHash, t.chainId || chainConfig.chain.id)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[#94A3B8] hover:text-[#00D2FF] flex items-center gap-1 transition-colors"

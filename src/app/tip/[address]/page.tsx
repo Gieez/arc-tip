@@ -20,6 +20,9 @@ export default function RecipientTipPage() {
     account,
     balance,
     chainId,
+    selectedChainId,
+    setSelectedChainId,
+    currentConfig,
     connect,
     disconnect,
     switchNetwork,
@@ -44,14 +47,14 @@ export default function RecipientTipPage() {
     if (!isValidAddress) return;
     setLoadingStats(true);
     try {
-      const stats = await getRecipientStats(cleanRecipient);
+      const stats = await getRecipientStats(cleanRecipient, selectedChainId);
       setRecipientStats(stats);
     } catch (err) {
       console.error("Failed to load recipient stats:", err);
     } finally {
       setLoadingStats(false);
     }
-  }, [cleanRecipient, isValidAddress]);
+  }, [cleanRecipient, isValidAddress, selectedChainId]);
 
   useEffect(() => {
     loadStats();
@@ -65,14 +68,14 @@ export default function RecipientTipPage() {
 
   const handleSendTip = async (
     recipient: string,
-    amountUsdc: string,
+    amountTokens: string,
     memo: string,
     useContract: boolean
   ) => {
-    const res = await sendTip(recipient, amountUsdc, memo, useContract);
+    const res = await sendTip(recipient, amountTokens, memo, useContract);
     if (res.success) {
       loadStats();
-      refreshBalance();
+      refreshBalance(account, selectedChainId);
     }
     return res;
   };
@@ -83,9 +86,10 @@ export default function RecipientTipPage() {
         account={account}
         balance={balance}
         chainId={chainId}
+        selectedChainId={selectedChainId}
         onConnect={connect}
         onDisconnect={disconnect}
-        onSwitchNetwork={() => setNetworkModalOpen(true)}
+        onOpenNetworkModal={() => setNetworkModalOpen(true)}
       />
 
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-8 sm:py-12 space-y-6">
@@ -115,17 +119,18 @@ export default function RecipientTipPage() {
                     {formatAddress(cleanRecipient)}
                   </h1>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950/40 border border-emerald-600/40 text-emerald-400">
-                    Arc Recipient
+                    {currentConfig.shortName} Recipient
                   </span>
                 </div>
+
                 <div className="flex items-center gap-3 mt-1.5 font-mono text-xs text-[#94A3B8]">
                   <a
-                    href={getAddressUrl(cleanRecipient)}
+                    href={getAddressUrl(cleanRecipient, selectedChainId)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-white flex items-center gap-1 transition-colors"
                   >
-                    <span>View on Explorer</span>
+                    <span>View on {currentConfig.shortName} Explorer</span>
                     <ExternalLink className="w-3 h-3" />
                   </a>
                   <span>•</span>
@@ -150,8 +155,8 @@ export default function RecipientTipPage() {
                   {loadingStats
                     ? "Loading..."
                     : recipientStats
-                    ? `${formatUsdc(recipientStats.totalReceived)} USDC`
-                    : "0.00 USDC"}
+                    ? `${formatUsdc(recipientStats.totalReceived)} ${currentConfig.symbol}`
+                    : `0.00 ${currentConfig.symbol}`}
                 </span>
               </div>
               <div className="h-8 w-[1px] bg-[#1E2638]" />
@@ -177,6 +182,7 @@ export default function RecipientTipPage() {
             initialRecipient={cleanRecipient}
             senderAddress={account}
             senderBalance={balance}
+            chainId={selectedChainId}
             onSendTip={handleSendTip}
           />
         </div>
@@ -184,14 +190,18 @@ export default function RecipientTipPage() {
 
       <footer className="w-full border-t border-[#1E2638] bg-[#0B0E14] py-6 text-xs text-[#94A3B8] text-center">
         <p className="font-mono text-[11px]">
-          ArcTip • Native USDC gas and micro-payments on Circle Arc (5042)
+          ArcTip • Multi-chain native micro-payments on Circle Arc (5042) & BOT Chain (677)
         </p>
       </footer>
 
       <NetworkModal
         isOpen={networkModalOpen}
+        activeChainId={selectedChainId}
         onClose={() => setNetworkModalOpen(false)}
-        onSwitch={switchNetwork}
+        onSwitch={(targetChainId) => {
+          setSelectedChainId(targetChainId);
+          switchNetwork(targetChainId);
+        }}
       />
 
       <QrModal
