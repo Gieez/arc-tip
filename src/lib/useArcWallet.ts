@@ -157,11 +157,22 @@ export function useArcWallet() {
           });
         }
 
-        // Wait for 1 confirmation
-        const receipt = await publicClient.waitForTransactionReceipt({
-          hash: txHash,
-          timeout: 25_000,
-        });
+        // Wait for 1 confirmation with timeout preservation
+        let receipt;
+        try {
+          receipt = await publicClient.waitForTransactionReceipt({
+            hash: txHash,
+            timeout: 25_000,
+          });
+        } catch (waitErr: unknown) {
+          console.warn("waitForTransactionReceipt timed out or delayed:", waitErr);
+          // Return success with note so user doesn't double-spend
+          return {
+            success: true,
+            txHash,
+            error: "Transaction submitted! Confirmation is pending on network.",
+          };
+        }
 
         // Refresh sender balance
         refreshBalance(fromAccount);
@@ -172,7 +183,7 @@ export function useArcWallet() {
           return {
             success: false,
             txHash,
-            error: "Transaction reverted on Arc Mainnet",
+            error: "Transaction reverted on chain.",
           };
         }
       } catch (err: unknown) {

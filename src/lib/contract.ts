@@ -41,6 +41,7 @@ export const ARC_TIP_ABI = [
       { name: "to", type: "address", indexed: true },
       { name: "amount", type: "uint256", indexed: false },
       { name: "memo", type: "string", indexed: false },
+      { name: "timestamp", type: "uint256", indexed: false },
     ],
   },
 ] as const;

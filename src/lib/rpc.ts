@@ -126,7 +126,7 @@ export async function getRecentTips(limit: number = 10): Promise<TipEvent[]> {
     const logs = await publicClient.getLogs({
       address: ARC_TIP_CONTRACT_ADDRESS,
       event: parseAbiItem(
-        "event Tip(address indexed from, address indexed to, uint256 amount, string memo)"
+        "event Tip(address indexed from, address indexed to, uint256 amount, string memo, uint256 timestamp)"
       ),
       fromBlock,
       toBlock: currentBlock,
@@ -139,6 +139,7 @@ export async function getRecentTips(limit: number = 10): Promise<TipEvent[]> {
       memo: (log.args.memo as string) || "",
       txHash: log.transactionHash,
       blockNumber: log.blockNumber,
+      timestamp: log.args.timestamp ? Number(log.args.timestamp) : undefined,
     }));
 
     return tips;
