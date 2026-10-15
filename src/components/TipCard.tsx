@@ -122,24 +122,29 @@ export const TipCard: React.FC<TipCardProps> = ({
     try {
       const res = await onSendTip(cleanRecipient, amount, memo, useContract);
       if (res.success && res.txHash) {
+        const isPending = !!res.error;
         setStatusMessage({
-          type: "success",
-          text: `Tip confirmed on ${chainConfig.name}! Sent ${amount} ${symbol} to ${formatAddress(
-            cleanRecipient
-          )}`,
+          type: isPending ? "info" : "success",
+          text: isPending
+            ? res.error!
+            : `Tip confirmed on ${chainConfig.name}! Sent ${amount} ${symbol} to ${formatAddress(
+                cleanRecipient
+              )}`,
           txHash: res.txHash,
         });
 
-        // Trigger confetti effect
-        try {
-          confetti({
-            particleCount: 80,
-            spread: 70,
-            origin: { y: 0.6 },
-            colors: ["#00D2FF", "#2775CA", "#10B981", "#ffffff"],
-          });
-        } catch {
-          // ignore
+        // Trigger confetti effect only on verified confirmation
+        if (!isPending) {
+          try {
+            confetti({
+              particleCount: 80,
+              spread: 70,
+              origin: { y: 0.6 },
+              colors: ["#00D2FF", "#2775CA", "#10B981", "#ffffff"],
+            });
+          } catch {
+            // ignore
+          }
         }
 
         setMemo("");
