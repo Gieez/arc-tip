@@ -82,7 +82,7 @@ export const SUPPORTED_CHAINS: Record<number, ChainConfig> = {
     decimals: 18,
     rpcUrl: "https://rpc.botchain.ai",
     explorerUrl: "https://scan.botchain.ai",
-    contractAddress: undefined, // Pending deployment once gas arrives
+    contractAddress: "0xe0ba8adf0cd660f5875aca70a98e466f30855dec",
   },
 };
 
