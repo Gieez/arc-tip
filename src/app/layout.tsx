@@ -14,24 +14,43 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "ArcTip — Native USDC Tipping & Micro-Payments on Arc Layer 1",
+  metadataBase: new URL("https://arc-tip-phi.vercel.app"),
+  title: "ArcTip — Multi-Chain Native Tipping & Micro-Payments",
   description:
-    "Non-custodial USDC tip jar and payment links on Circle's Arc Layer 1 (Chain ID 5042). Native USDC gas, zero approvals, sub-second settlement.",
+    "Non-custodial micro-payments and on-chain tipping protocol across Circle Arc L1 (5042) and BOT Chain Mainnet (677). Zero approvals, sub-cent fees, permanent memos.",
   keywords: [
     "Arc",
     "Circle",
+    "BOT Chain",
     "USDC",
-    "Layer 1",
+    "BOT",
     "Tipping",
+    "PayFi",
+    "Micro-payments",
     "Web3",
-    "DoraHacks",
-    "Microgrants",
   ],
   openGraph: {
-    title: "ArcTip — Native USDC Tipping on Arc",
+    title: "ArcTip — Multi-Chain Native Tipping Protocol",
     description:
-      "Zero token approvals. Gas paid in USDC. Fast non-custodial tipping on Circle's Arc Layer 1.",
+      "Non-custodial micro-payments with permanent on-chain memos across Circle Arc L1 and BOT Chain Mainnet.",
+    url: "https://arc-tip-phi.vercel.app",
+    siteName: "ArcTip",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "ArcTip Protocol",
+      },
+    ],
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ArcTip — Multi-Chain Native Tipping Protocol",
+    description:
+      "Non-custodial micro-payments with permanent on-chain memos across Circle Arc L1 and BOT Chain Mainnet.",
+    images: ["/og-image.png"],
   },
 };
 
