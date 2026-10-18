@@ -272,40 +272,71 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="w-full border-t border-[#1E2638] bg-[#0B0E14] py-8 text-xs text-[#94A3B8]">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span className="font-bold text-white tracking-tight">ArcTip</span>
-            <span className="text-[#475569]">•</span>
-            <span>Circle Arc (5042) & BOT Chain (677)</span>
-          </div>
+        <div className="max-w-6xl mx-auto px-4 flex flex-col gap-5">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="font-bold text-white tracking-tight">ArcTip</span>
+              <span className="text-[#475569]">•</span>
+              <span>Non-Custodial Micro-Payments & Tipping</span>
+            </div>
 
-          <div className="flex items-center gap-4 font-mono text-[11px]">
-            <a
-              href="https://github.com/Gieez/arc-tip"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-white flex items-center gap-1 transition-colors"
-            >
-              <Code2 className="w-3.5 h-3.5" />
-              <span>GitHub Repo</span>
-            </a>
-            {currentConfig.contractAddress && (
+            <div className="flex items-center gap-4 font-mono text-[11px]">
               <a
-                href={`${currentConfig.explorerUrl}/address/${currentConfig.contractAddress}`}
+                href="https://github.com/Gieez/arc-tip"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-white flex items-center gap-1 transition-colors"
               >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span>Contract</span>
+                <Code2 className="w-3.5 h-3.5" />
+                <span>GitHub</span>
               </a>
-            )}
-            <button
-              onClick={() => setNetworkModalOpen(true)}
-              className="hover:text-[#00D2FF] transition-colors"
-            >
-              Network Switcher
-            </button>
+              {currentConfig.contractAddress && (
+                <a
+                  href={`${currentConfig.explorerUrl}/address/${currentConfig.contractAddress}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white flex items-center gap-1 transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Contract</span>
+                </a>
+              )}
+              <button
+                onClick={() => setNetworkModalOpen(true)}
+                className="hover:text-[#00D2FF] transition-colors"
+              >
+                Network Switcher
+              </button>
+            </div>
+          </div>
+
+          {/* Ecosystem Partner Section with Required Official Links */}
+          <div className="pt-4 border-t border-[#1E2638]/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-mono">
+            <div className="flex items-center gap-2">
+              <span className="text-[#64748B]">Ecosystem Partner:</span>
+              <span className="text-white font-medium">BOT Chain Mainnet (Chain ID 677)</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <a
+                href="https://botchain.ai"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#00D2FF] hover:underline flex items-center gap-1 transition-colors"
+              >
+                <span>BOT Chain Official Website</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+              <span className="text-[#475569]">•</span>
+              <a
+                href="https://scan.botchain.ai"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#00D2FF] hover:underline flex items-center gap-1 transition-colors"
+              >
+                <span>BOT Chain Explorer</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
           </div>
         </div>
       </footer>

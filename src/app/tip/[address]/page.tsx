@@ -188,10 +188,29 @@ export default function RecipientTipPage() {
         </div>
       </main>
 
-      <footer className="w-full border-t border-[#1E2638] bg-[#0B0E14] py-6 text-xs text-[#94A3B8] text-center">
-        <p className="font-mono text-[11px]">
-          ArcTip • Multi-chain native micro-payments on Circle Arc (5042) & BOT Chain (677)
-        </p>
+      <footer className="w-full border-t border-[#1E2638] bg-[#0B0E14] py-6 text-xs text-[#94A3B8]">
+        <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 font-mono text-[11px]">
+          <p>ArcTip • Circle Arc & BOT Chain</p>
+          <div className="flex items-center gap-3">
+            <a
+              href="https://botchain.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#00D2FF] hover:underline"
+            >
+              BOT Chain Official
+            </a>
+            <span className="text-[#475569]">•</span>
+            <a
+              href="https://scan.botchain.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#00D2FF] hover:underline"
+            >
+              BOTScan Explorer
+            </a>
+          </div>
+        </div>
       </footer>
 
       <NetworkModal
