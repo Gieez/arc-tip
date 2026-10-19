@@ -24,6 +24,23 @@ export function useArcWallet() {
   const [selectedChainId, setSelectedChainId] = useState<number>(DEFAULT_CHAIN_ID);
   const [isConnecting, setIsConnecting] = useState(false);
 
+  // Check URL query parameters for direct network entry (e.g. ?chain=677 or ?network=botchain)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const c = params.get("chain") || params.get("chainId") || params.get("network");
+        if (c === "677" || c?.toLowerCase() === "botchain" || c?.toLowerCase() === "bot") {
+          setSelectedChainId(677);
+        } else if (c === "5042" || c?.toLowerCase() === "arc") {
+          setSelectedChainId(5042);
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }, []);
+
   const activeChainId = chainId || selectedChainId;
   const currentConfig = getChainConfig(activeChainId);
 
