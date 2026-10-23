@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X, Copy, Check, Globe, Zap } from "lucide-react";
 import { SUPPORTED_CHAINS } from "@/lib/chains";
 
@@ -19,6 +19,12 @@ export const NetworkModal: React.FC<NetworkModalProps> = ({
 }) => {
   const [selectedChain, setSelectedChain] = useState<number>(activeChainId || 5042);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen && activeChainId) {
+      setSelectedChain(activeChainId);
+    }
+  }, [isOpen, activeChainId]);
 
   if (!isOpen) return null;
 

@@ -24,10 +24,9 @@ export const Header: React.FC<HeaderProps> = ({
   onDisconnect,
   onOpenNetworkModal,
 }) => {
-  const activeChainId = chainId || selectedChainId;
-  const currentConfig = getChainConfig(activeChainId);
-  const isChainSupported = !!SUPPORTED_CHAINS[activeChainId];
-  const isMatchingWallet = chainId === activeChainId;
+  const currentConfig = getChainConfig(selectedChainId);
+  const isChainSupported = !!SUPPORTED_CHAINS[selectedChainId];
+  const isMatchingWallet = !account || chainId === selectedChainId;
 
   return (
     <header className="w-full border-b border-[#1E2638] bg-[#0B0E14]/80 backdrop-blur-md sticky top-0 z-50">

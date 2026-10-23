@@ -15,7 +15,10 @@ import {
   getChainConfig,
 } from "./chains";
 import { getPublicClient, getAccountBalance } from "./rpc";
-import { ARC_TIP_ABI, getContractAddressForChain } from "./contract";
+import {
+  getContractAddressForChain,
+  getContractAbiForChain,
+} from "./contract";
 
 export function useArcWallet() {
   const [account, setAccount] = useState<string | null>(null);
@@ -41,8 +44,7 @@ export function useArcWallet() {
     }
   }, []);
 
-  const activeChainId = chainId || selectedChainId;
-  const currentConfig = getChainConfig(activeChainId);
+  const currentConfig = getChainConfig(selectedChainId);
 
   // Refresh balance
   const refreshBalance = useCallback(
@@ -52,11 +54,11 @@ export function useArcWallet() {
         setBalance(null);
         return;
       }
-      const cId = targetChainId || activeChainId;
+      const cId = targetChainId || selectedChainId;
       const bal = await getAccountBalance(target, cId);
       setBalance(bal);
     },
-    [account, activeChainId]
+    [account, selectedChainId]
   );
 
   // Connect Wallet
@@ -201,11 +203,12 @@ export function useArcWallet() {
 
         let txHash: `0x${string}`;
 
+        const abi = getContractAbiForChain(targetChain.id);
         if (useContract && contractAddress) {
           // Contract call with on-chain memo
           txHash = await walletClient.writeContract({
             address: contractAddress,
-            abi: ARC_TIP_ABI,
+            abi,
             functionName: "tip",
             args: [cleanRecipient, memo || ""],
             value: valueWei,
@@ -313,7 +316,18 @@ export function useArcWallet() {
         if (hex) {
           const cId = parseInt(hex, 16);
           setChainId(cId);
-          if (SUPPORTED_CHAINS[cId]) {
+
+          // Only sync selectedChainId if user didn't enter with a specific ?chain= URL param
+          let hasUrlChain = false;
+          try {
+            const params = new URLSearchParams(window.location.search);
+            const c = params.get("chain") || params.get("chainId") || params.get("network");
+            if (c) hasUrlChain = true;
+          } catch {
+            // ignore
+          }
+
+          if (!hasUrlChain && SUPPORTED_CHAINS[cId]) {
             setSelectedChainId(cId);
           }
         }

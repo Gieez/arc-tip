@@ -1,8 +1,8 @@
 import { createPublicClient, http, parseAbiItem } from "viem";
 import { arcMainnet, botChainMainnet, getChainConfig } from "./chains";
 import {
-  ARC_TIP_ABI,
   getContractAddressForChain,
+  getContractAbiForChain,
 } from "./contract";
 
 export const publicClient = createPublicClient({
@@ -121,17 +121,18 @@ export async function getRecipientStats(
   }
 
   const client = getPublicClient(chainId);
+  const abi = getContractAbiForChain(chainId);
   try {
     const [totalReceived, tipCount] = await Promise.all([
       client.readContract({
         address: contractAddress,
-        abi: ARC_TIP_ABI,
+        abi,
         functionName: "totalReceived",
         args: [address as `0x${string}`],
       }),
       client.readContract({
         address: contractAddress,
-        abi: ARC_TIP_ABI,
+        abi,
         functionName: "tipCount",
         args: [address as `0x${string}`],
       }),
@@ -158,10 +159,11 @@ export async function getGlobalTotalTips(
   }
 
   const client = getPublicClient(chainId);
+  const abi = getContractAbiForChain(chainId);
   try {
     const total = await client.readContract({
       address: contractAddress,
-      abi: ARC_TIP_ABI,
+      abi,
       functionName: "totalTips",
     });
     return total as bigint;
@@ -180,33 +182,58 @@ export async function getRecentTips(
   }
 
   const client = getPublicClient(chainId);
+  const targetChainId = chainId || arcMainnet.id;
   try {
     const currentBlock = await client.getBlockNumber();
-    const fromBlock = currentBlock > 2000n ? currentBlock - 2000n : 0n;
+
+    // BOT Chain (677) has no 2000-block limitation; query from deployment block 26768000n.
+    // Arc L1 limits eth_getLogs to max 2000 blocks per request.
+    const fromBlock =
+      targetChainId === 677
+        ? 26768000n
+        : currentBlock > 2000n
+        ? currentBlock - 2000n
+        : 0n;
+
+    // BOT Chain contract event Tip does not have timestamp parameter; Arc contract does.
+    const eventItem =
+      targetChainId === 677
+        ? parseAbiItem(
+            "event Tip(address indexed from, address indexed to, uint256 amount, string memo)"
+          )
+        : parseAbiItem(
+            "event Tip(address indexed from, address indexed to, uint256 amount, string memo, uint256 timestamp)"
+          );
 
     const logs = await client.getLogs({
       address: contractAddress,
-      event: parseAbiItem(
-        "event Tip(address indexed from, address indexed to, uint256 amount, string memo, uint256 timestamp)"
-      ),
+      event: eventItem,
       fromBlock,
       toBlock: currentBlock,
     });
 
-    const targetChainId = chainId || arcMainnet.id;
     const tips: TipEvent[] = logs
       .slice(-limit)
       .reverse()
-      .map((log) => ({
-        from: log.args.from as string,
-        to: log.args.to as string,
-        amount: log.args.amount as bigint,
-        memo: (log.args.memo as string) || "",
-        txHash: log.transactionHash,
-        blockNumber: log.blockNumber,
-        timestamp: log.args.timestamp ? Number(log.args.timestamp) : undefined,
-        chainId: targetChainId,
-      }));
+      .map((log) => {
+        const args = log.args as {
+          from: string;
+          to: string;
+          amount: bigint;
+          memo?: string;
+          timestamp?: bigint;
+        };
+        return {
+          from: args.from,
+          to: args.to,
+          amount: args.amount,
+          memo: args.memo || "",
+          txHash: log.transactionHash,
+          blockNumber: log.blockNumber,
+          timestamp: args.timestamp ? Number(args.timestamp) : undefined,
+          chainId: targetChainId,
+        };
+      });
 
     return tips;
   } catch (err) {
