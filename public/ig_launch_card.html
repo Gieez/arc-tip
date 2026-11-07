@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080, height=1080">
+<title>ArcTip Instagram Square Launch</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    width: 1080px;
+    height: 1080px;
+    background: #06080D;
+    color: #FFFFFF;
+    margin: 0;
+    overflow: hidden;
+    position: relative;
+  }
+  .font-mono { font-family: 'JetBrains Mono', monospace; }
+  .glow-cyan {
+    position: absolute;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, rgba(0, 210, 255, 0.16) 0%, rgba(39, 117, 202, 0.05) 50%, transparent 70%);
+    top: -150px;
+    left: -150px;
+    filter: blur(80px);
+    pointer-events: none;
+  }
+  .glow-emerald {
+    position: absolute;
+    width: 650px;
+    height: 650px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.13) 0%, transparent 70%);
+    bottom: -150px;
+    right: -150px;
+    filter: blur(90px);
+    pointer-events: none;
+  }
+  .dot-grid {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1.2px, transparent 1.2px);
+    background-size: 32px 32px;
+  }
+  .glass {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+  .glass-active {
+    background: linear-gradient(135deg, rgba(0, 210, 255, 0.08) 0%, rgba(16, 185, 129, 0.03) 100%);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(0, 210, 255, 0.3);
+    box-shadow: 0 30px 70px rgba(0, 210, 255, 0.1), inset 0 1px 0 rgba(0, 210, 255, 0.35);
+  }
+  .text-gradient {
+    background: linear-gradient(135deg, #FFFFFF 20%, #94A3B8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .cyan-gradient {
+    background: linear-gradient(135deg, #00D2FF 0%, #38BDF8 60%, #10B981 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+</style>
+</head>
+<body class="p-16 flex flex-col justify-between relative">
+  <div class="glow-cyan"></div>
+  <div class="glow-emerald"></div>
+  <div class="absolute inset-0 dot-grid pointer-events-none"></div>
+
+  <!-- Top Brand Row -->
+  <div class="flex items-center justify-between z-10">
+    <div class="flex items-center gap-4">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#00D2FF] to-[#2775CA] flex items-center justify-center shadow-xl shadow-[#00D2FF]/25">
+        <span class="text-[#06080D] font-black text-3xl">⚡</span>
+      </div>
+      <div>
+        <h2 class="text-2xl font-black tracking-tight text-white">ArcTip</h2>
+        <span class="text-xs font-mono text-[#00D2FF] tracking-wider uppercase">Next-Gen Micro-Payments</span>
+      </div>
+    </div>
+    
+    <div class="flex gap-2.5 font-mono text-xs">
+      <div class="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-slate-300 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-[#00D2FF] animate-pulse"></span>
+        <span>Circle Arc</span>
+      </div>
+      <div class="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-slate-300 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-[#10B981]"></span>
+        <span>BOT Chain</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Center Content -->
+  <div class="space-y-8 z-10 my-auto">
+    <div class="space-y-4 text-center max-w-2xl mx-auto">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#00D2FF]/10 text-[#00D2FF] font-mono text-xs font-bold tracking-widest uppercase border border-[#00D2FF]/20">
+        <span>⚡ Official Protocol Launch</span>
+      </div>
+      
+      <h1 class="text-5xl font-black tracking-tight leading-[1.12] text-gradient">
+        Frictionless Web3 Tipping for <span class="cyan-gradient">Creators & AI Agents</span>.
+      </h1>
+
+      <p class="text-slate-400 text-base leading-relaxed max-w-xl mx-auto">
+        Say goodbye to middleman platform cuts and multi-step token approvals. Receive instant, non-custodial tips with permanent on-chain memos.
+      </p>
+    </div>
+
+    <!-- 3 Core Feature Cards -->
+    <div class="grid grid-cols-3 gap-5">
+      <div class="glass rounded-2xl p-6 text-center space-y-3">
+        <div class="w-12 h-12 rounded-xl bg-[#00D2FF]/10 border border-[#00D2FF]/20 flex items-center justify-center text-[#00D2FF] mx-auto text-xl">
+          ⚡
+        </div>
+        <h3 class="font-bold text-white text-base">Zero Approvals</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          1-step atomic payment via native value. No approve() allowance friction.
+        </p>
+      </div>
+
+      <div class="glass-active rounded-2xl p-6 text-center space-y-3">
+        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mx-auto text-xl">
+          💸
+        </div>
+        <h3 class="font-bold text-white text-base">Sub-Cent Gas</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Ultra-low network fees (&lt;$0.001). Perfect for sub-dollar micro-tips.
+        </p>
+      </div>
+
+      <div class="glass rounded-2xl p-6 text-center space-y-3">
+        <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mx-auto text-xl">
+          🔗
+        </div>
+        <h3 class="font-bold text-white text-base">Instant Links & QR</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Personal shareable payment URLs and mobile QR codes for any creator.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Details -->
+  <div class="pt-6 border-t border-white/10 flex items-center justify-between text-xs font-mono text-slate-400 z-10">
+    <div class="flex items-center gap-3">
+      <span class="text-white font-bold">ArcTip Protocol</span>
+      <span>•</span>
+      <span class="text-slate-500">Non-Custodial PayFi</span>
+    </div>
+
+    <div class="flex items-center gap-4 text-[#00D2FF]">
+      <span>arc-tip-phi.vercel.app</span>
+      <span class="text-slate-600">•</span>
+      <span>@ArcTipApp_</span>
+    </div>
+  </div>
+</body>
+</html>

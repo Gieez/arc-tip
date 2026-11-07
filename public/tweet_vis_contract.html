@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1200, height=675">
+<title>Contract Architecture</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Plus Jakarta Sans', sans-serif; width: 1200px; height: 675px; background: #06080D; color: #fff; margin: 0; overflow: hidden; }
+  .font-mono { font-family: 'JetBrains Mono', monospace; }
+  .glow { position: absolute; width: 550px; height: 550px; background: radial-gradient(circle, rgba(0, 210, 255, 0.1) 0%, transparent 70%); filter: blur(60px); pointer-events: none; }
+  .glass { background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); }
+  .glass-active { background: linear-gradient(135deg, rgba(0, 210, 255, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%); border: 1px solid rgba(0, 210, 255, 0.25); }
+</style>
+</head>
+<body class="p-12 flex flex-col justify-between relative">
+  <div class="glow" style="top: -100px; right: -50px;"></div>
+  
+  <div class="flex items-center justify-between z-10">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#00D2FF] to-[#2775CA] flex items-center justify-center font-black text-black">⚡</div>
+      <span class="font-bold text-xl tracking-tight">ArcTip Protocol</span>
+      <span class="text-[11px] font-mono text-[#00D2FF] px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 uppercase">Smart Contract Audit</span>
+    </div>
+    <div class="font-mono text-xs text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+      Zero Custodial Risk • Sol 0.8.20
+    </div>
+  </div>
+
+  <div class="grid grid-cols-12 gap-8 items-center my-auto z-10">
+    <div class="col-span-5 space-y-4">
+      <div class="text-[#00D2FF] font-mono text-xs font-semibold uppercase tracking-wider">Security By Design</div>
+      <h1 class="text-4xl font-extrabold tracking-tight leading-tight">
+        Why zero TVL is a security feature, not a bug.
+      </h1>
+      <p class="text-slate-400 text-sm leading-relaxed">
+        Custodial vaults create billion-dollar hacker honeypots. ArcTip uses pure atomic forwarding: funds never sit in contract storage.
+      </p>
+    </div>
+
+    <div class="col-span-7 glass-active rounded-2xl p-6 space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-white/10">
+        <span class="text-xs font-mono text-slate-300">contracts/ArcTipJar.sol</span>
+        <span class="text-[10px] font-mono text-slate-500">Atomic Execution</span>
+      </div>
+
+      <div class="bg-[#0B0E14] rounded-xl p-4 font-mono text-xs text-slate-300 space-y-2 border border-white/5">
+        <div class="text-slate-500">// 1. Atomic forwarding (Zero pool balance held)</div>
+        <div>(bool sent, ) = to.call{value: msg.value}("");</div>
+        <div class="text-emerald-400">require(sent, "Native transfer failed");</div>
+        <div class="text-slate-500 pt-2">// 2. Immutable on-chain audit event</div>
+        <div class="text-[#00D2FF]">emit Tip(msg.sender, to, msg.value, memo, block.timestamp);</div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3 pt-2 text-center font-mono text-xs">
+        <div class="p-2.5 rounded-lg bg-black/40 border border-white/5">
+          <span class="text-slate-400 block text-[10px]">CONTRACT TVL</span>
+          <span class="text-emerald-400 font-bold">$0.00 (Immune)</span>
+        </div>
+        <div class="p-2.5 rounded-lg bg-black/40 border border-white/5">
+          <span class="text-slate-400 block text-[10px]">SETTLEMENT</span>
+          <span class="text-white font-bold">1 Block (Instant)</span>
+        </div>
+        <div class="p-2.5 rounded-lg bg-black/40 border border-white/5">
+          <span class="text-slate-400 block text-[10px]">ALLOWANCE</span>
+          <span class="text-[#00D2FF] font-bold">0 Approvals</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex justify-between items-center text-xs font-mono text-slate-500 pt-3 border-t border-white/5 z-10">
+    <span>Verified on Circle Arc & BOTScan</span>
+    <span>github.com/Gieez/arc-tip</span>
+  </div>
+</body>
+</html>

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { formatAddress, formatUsdc } from "@/lib/format";
 import { getChainConfig, SUPPORTED_CHAINS } from "@/lib/chains";
 import { Wallet, ChevronDown } from "lucide-react";
@@ -33,8 +34,15 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Brand */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#00D2FF] to-[#2775CA] flex items-center justify-center shadow-lg shadow-[#00D2FF]/20">
-            <span className="text-[#0B0E14] font-black text-lg tracking-tighter">⚡</span>
+          <div className="w-9 h-9 rounded-lg overflow-hidden border border-[#00D2FF]/30 shadow-lg shadow-[#00D2FF]/20 relative flex items-center justify-center bg-[#0B0E14]">
+            <Image
+              src="/logo.png"
+              alt="ArcTip Logo"
+              width={36}
+              height={36}
+              className="w-full h-full object-cover"
+              priority
+            />
           </div>
           <div>
             <div className="flex items-center gap-2">
